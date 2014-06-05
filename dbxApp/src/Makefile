@@ -8,31 +8,19 @@ include $(TOP)/configure/CONFIG
 #=============================
 # Build the IOC application
 
-PROD_IOC = dbx
-# dbx.dbd will be created and installed
-DBD += dbx.dbd
+LIBRARY_IOC = dbx
 
-# dbx.dbd will be made up from these files:
-dbx_DBD += base.dbd
+LIB_SRCS += dbxlock.c
 
-# Include dbd files from all support applications:
-#dbx_DBD += xxx.dbd
+dbx_LIBS += Com
 
-# Add all the support libraries needed by this IOC
-#dbx_LIBS += xxx
+TESTPROD_IOC = testlock
+testlock_SRCS += testlock.c
+testlock_LIBS += dbx Com
 
-# dbx_registerRecordDeviceDriver.cpp derives from dbx.dbd
-dbx_SRCS += dbx_registerRecordDeviceDriver.cpp
-
-# Build the main IOC entry point on workstation OSs.
-dbx_SRCS_DEFAULT += dbxMain.cpp
-dbx_SRCS_vxWorks += -nil-
-
-# Add support from base/src/vxWorks if needed
-#dbx_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
-
-# Finally link to the EPICS Base libraries
-dbx_LIBS += $(EPICS_BASE_IOC_LIBS)
+## Enable GCC coverage stats
+#dbxlock_CFLAGS += -fprofile-arcs -ftest-coverage
+#USR_LDFLAGS += -lgcov -coverage
 
 #===========================
 

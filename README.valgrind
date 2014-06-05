@@ -1,0 +1,2 @@
+
+valgrind --leak-check=full --suppressions=testlock.supp dbxApp/src/O.linux-x86_64-debug/testlock

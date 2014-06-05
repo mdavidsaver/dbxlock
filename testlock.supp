@@ -1,0 +1,21 @@
+{
+   osimutex free list
+   Memcheck:Leak
+   fun:calloc
+   fun:epicsMutexOsiCreate
+   ...
+}
+{
+   once
+   Memcheck:Leak
+   ...
+   fun:epicsThreadOnce
+   ...
+}
+{
+   iocsh register
+   Memcheck:Leak
+   ...
+   fun:iocshRegister
+   ...
+}
