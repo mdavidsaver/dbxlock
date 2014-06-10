@@ -18,6 +18,10 @@ TESTPROD_IOC = testlock
 testlock_SRCS += testlock.c
 testlock_LIBS += dbx Com
 
+TESTPROD_IOC = stresslock
+stresslock_SRCS += stresslock.c
+stresslock_LIBS += dbx Com
+
 ## Enable GCC coverage stats
 #dbxlock_CFLAGS += -fprofile-arcs -ftest-coverage
 #USR_LDFLAGS += -lgcov -coverage
