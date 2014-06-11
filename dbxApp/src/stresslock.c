@@ -168,6 +168,8 @@ void runStress(void)
     srand(seedts.tv_nsec);
 
     numrefs = rand()%MAXREFS;
+    if(numrefs<1)
+        numrefs = 1;
 
     testDiag("Creating %d refs", numrefs);
 
