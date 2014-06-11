@@ -3,6 +3,15 @@
 
 #include <ellLib.h>
 
+#if 1
+# include <epicsMutex.h>
+# define DBXSPIN_T epicsMutexId
+# define DBXSPIN_MUTEX
+#else
+# define DBXSPIN_T int
+# define DBXSPIN_INT
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,7 +32,7 @@ struct dbxLockRef {
     int visited; /* used by dbxLockRefSplit() */
 
     dbxLock *lock;
-    int spin;
+    DBXSPIN_T spin;
 };
 typedef struct dbxLockRef dbxLockRef;
 

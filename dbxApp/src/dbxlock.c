@@ -26,16 +26,6 @@ static void dbxlockonce(void *x)
     tickquantum = epicsThreadSleepQuantum()*2;
 }
 
-static void slock(int* l) {
-    while(epicsAtomicCmpAndSwapIntT(l, 0, 1)!=0)
-    {}; /* epicsThreadSleep(tickquantum); */
-}
-
-static void sunlock(int* l) {
-    assert(epicsAtomicGetIntT(l)==1);
-    epicsAtomicSetIntT(l, 0);
-}
-
 static
 int dbxlockcomp(const void *rawA, const void *rawB)
 {
@@ -119,7 +109,7 @@ int dbxupdaterefs(dbxLocker *ptr, int update)
                 continue;
             }
 
-            slock(&ref->ref->spin);
+            slock(ref->ref);
             if(ref->lock!=ref->ref->lock) {
                 changed = 1;
                 if(update) {
@@ -129,7 +119,7 @@ int dbxupdaterefs(dbxLocker *ptr, int update)
                     ref->lock = ref->ref->lock;
                 }
             }
-            sunlock(&ref->ref->spin);
+            sunlock(ref->ref);
         }
         if(update)
             ptr->recomp = recomp;
@@ -148,6 +138,7 @@ int dbxLockRefInit(dbxLockRef* pref, unsigned int flags)
 
     memset(pref, 0, sizeof(*pref));
     pref->lock = dbxlockalloc();
+    alloclock(pref);
 
     if(pref->lock) {
         ellAdd(&pref->lock->refsets, &pref->refsetsNode);
@@ -196,6 +187,7 @@ int dbxLockRefClean(dbxLockRef *pref)
         L->A = L->B = NULL;
     }
 
+    freelock(pref);
     memset(pref, 0, sizeof(*pref));
 
     dbxUnlockOne(lock); /* release the caller's ref */
@@ -241,16 +233,16 @@ dbxLock* dbxLockOne(dbxLockRef *R, unsigned int flags)
     dbxLock *L, *L2;
 
 retry:
-    slock(&R->spin);
+    slock(R);
     L = R->lock;
     dbxlockref(L);
-    sunlock(&R->spin);
+    sunlock(R);
 
     epicsMutexMustLock(L->lock);
 
-    slock(&R->spin);
+    slock(R);
     L2 = R->lock;
-    sunlock(&R->spin);
+    sunlock(R);
 
     if(L != L2) {
         /* oops, collided with recompute */
@@ -387,10 +379,10 @@ dbxLockLink* dbxLockRefJoin(dbxLocker *ptr, dbxLockRef *A, dbxLockRef *B)
             dbxLockRef *refX = CONTAINER(cur, dbxLockRef, refsetsNode);
 
             assert(refX->lock==lockB);
-            slock(&refX->spin);
+            slock(refX);
             refX->lock = lockA;
             epicsAtomicIncrSizeT(&recomputeCnt);
-            sunlock(&refX->spin);
+            sunlock(refX);
         }
 
         /* update ref counters */
@@ -551,10 +543,10 @@ int dbxLockRefSplit(dbxLocker *ptr, dbxLockLink *R)
         ELL_FOREACH(&lockB->refsets, curRef) {
             dbxLockRef *ref = CONTAINER(curRef, dbxLockRef, refsetsNode);
 
-            slock(&ref->spin);
+            slock(ref);
             ref->lock = lockB;
             epicsAtomicIncrSizeT(&recomputeCnt);
-            sunlock(&ref->spin);
+            sunlock(ref);
         }
 
         /* adjust ref counts */

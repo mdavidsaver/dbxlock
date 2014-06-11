@@ -251,6 +251,8 @@ static void testLockSplit(void)
 
     testOk1(dbxLockRefInit(&A, 0)==0);
 
+    alloclock(&B);
+
     /* we setup B to share a lock with A */
     B.lock = A.lock;
     epicsAtomicIncrIntT(&A.lock->refcnt);
