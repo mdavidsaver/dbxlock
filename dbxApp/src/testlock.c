@@ -45,6 +45,8 @@ static void testLockerSort(void)
     testOk1(L1->refs[0].ref==L2->refs[0].ref);
     testOk1(L1->refs[1].ref==L2->refs[1].ref);
 
+    testOk1(L1->refs[0].lock < L2->refs[1].lock);
+
     testOk1(dbxLockerFree(L1)==0);
     testOk1(dbxLockerFree(L2)==0);
     testOk1(dbxLockRefClean(&A)==0);
@@ -492,7 +494,7 @@ static void testRelockJoin(void)
 
 MAIN(testlock)
 {
-    testPlan(230);
+    testPlan(231);
     testCreate();
     testLockerSort();
     testLockOne();
