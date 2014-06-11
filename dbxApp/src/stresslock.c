@@ -161,13 +161,15 @@ void runStress(void)
     struct timespec seedts;
     size_t i;
     testdata data;
-    int numrefs = rand()%MAXREFS;
+    int numrefs;
     int numlockers = 8;
-
-    testDiag("Creating %d refs", numrefs);
 
     fetchtime(&seedts);
     srand(seedts.tv_nsec);
+
+    numrefs = rand()%MAXREFS;
+
+    testDiag("Creating %d refs", numrefs);
 
     fetchtime(&data.stoptime);
     data.stoptime.tv_sec += 15;
