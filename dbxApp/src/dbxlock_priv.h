@@ -7,6 +7,8 @@
 
 #include "dbx/lock.h"
 
+#define DBXLOCK_DEBUG
+
 #define ELL_FOREACH(LIST, A) \
     for(A=ellFirst(LIST); A; A=ellNext(A))
 

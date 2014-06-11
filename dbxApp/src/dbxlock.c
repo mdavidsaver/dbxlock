@@ -129,6 +129,14 @@ int dbxupdaterefs(dbxLocker *ptr, int update)
 
     if(changed && update)
         qsort(ptr->refs, ptr->maxrefs, sizeof(dbx_locker_ref), &dbxlockcomp);
+#ifdef DBXLOCK_DEBUG
+    for(i=1; i<ptr->maxrefs; i++) {
+        if(!ptr->refs[i].lock)
+            continue;
+        assert(ptr->refs[i-1].lock <= ptr->refs[i].lock);
+        assert(dbxlockcomp(&ptr->refs[i-1], &ptr->refs[i])<1);
+    }
+#endif
     return changed;
 }
 
@@ -265,11 +273,17 @@ int dbxUnlockOne(dbxLock* L)
 
 int dbxLockMany(dbxLocker *ptr, unsigned int flags)
 {
+#ifdef DBXLOCK_DEBUG
+    dbxLock *prevlock;
+#endif
     size_t i, nlock = ptr->maxrefs;
     dbxLock *plock;
     assert(ellCount(&ptr->locked)==0);
 
 retry:
+#ifdef DBXLOCK_DEBUG
+    prevlock = NULL;
+#endif
     dbxupdaterefs(ptr, 1);
 
     for(i=0, plock=NULL; i<nlock; i++) {
@@ -279,6 +293,10 @@ retry:
         if(!ref->lock || (i!=0 && ref->lock==plock))
             continue;
         plock = ref->lock;
+#ifdef DBXLOCK_DEBUG
+        assert(!prevlock || prevlock < plock);
+        prevlock = plock;
+#endif
 
         epicsMutexMustLock(plock->lock);
         assert(plock->owner==NULL);
