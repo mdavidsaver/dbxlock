@@ -28,7 +28,7 @@ static void dbxlockonce(void *x)
 
 static void slock(int* l) {
     while(epicsAtomicCmpAndSwapIntT(l, 0, 1)!=0)
-        epicsThreadSleep(tickquantum);
+    {}; /* epicsThreadSleep(tickquantum); */
 }
 
 static void sunlock(int* l) {
