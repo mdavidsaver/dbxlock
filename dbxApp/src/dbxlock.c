@@ -82,8 +82,10 @@ void dbxlockunref(dbxLock *ptr)
     if(cnt>0)
         return;
 
+    epicsMutexMustLock(ptr->lock);
     assert(ellCount(&ptr->refsets)==0);
     assert(ptr->owner==NULL);
+    epicsMutexUnlock(ptr->lock);
 
     epicsMutexDestroy(ptr->lock);
     free(ptr);
