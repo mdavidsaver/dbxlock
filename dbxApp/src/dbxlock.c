@@ -71,6 +71,13 @@ dbxLock * dbxlockalloc(void)
     return L;
 }
 
+static inline
+void dbxlockref(dbxLock *ptr)
+{
+    int cnt = epicsAtomicIncrIntT(&ptr->refcnt);
+    assert(cnt>1);
+}
+
 /* Lock must NOT be held! */
 void dbxlockunref(dbxLock *ptr)
 {
@@ -118,7 +125,7 @@ int dbxupdaterefs(dbxLocker *ptr, int update)
                 if(update) {
                     dbxlockunref(ref->lock);
                     if(ref->ref->lock)
-                        epicsAtomicIncrIntT(&ref->ref->lock->refcnt);
+                        dbxlockref(ref->ref->lock);
                     ref->lock = ref->ref->lock;
                 }
             }
@@ -232,14 +239,12 @@ int dbxLockerFree(dbxLocker *ptr)
 dbxLock* dbxLockOne(dbxLockRef *R, unsigned int flags)
 {
     dbxLock *L, *L2;
-    int newcnt;
 
 retry:
     slock(&R->spin);
     L = R->lock;
-    newcnt = epicsAtomicIncrIntT(&L->refcnt);
+    dbxlockref(L);
     sunlock(&R->spin);
-    assert(newcnt>1);
 
     epicsMutexMustLock(L->lock);
 
@@ -286,7 +291,7 @@ retry:
         plock->owner = ptr;
         ellAdd(&ptr->locked, &ref->lock->lockedNode);
         // An extra ref for the locked list node
-        epicsAtomicIncrIntT(&plock->refcnt);
+        dbxlockref(plock);
     }
 
     if(dbxupdaterefs(ptr,0)) {
@@ -553,6 +558,7 @@ int dbxLockRefSplit(dbxLocker *ptr, dbxLockLink *R)
         }
 
         /* adjust ref counts */
+        assert(epicsAtomicGetIntT(&L->refcnt) > ellCount(&lockB->refsets));
         epicsAtomicAddIntT(&lockB->refcnt, ellCount(&lockB->refsets));
         epicsAtomicAddIntT(&L->refcnt,    -ellCount(&lockB->refsets));
         /* should have at least the caller's ref remaining */
