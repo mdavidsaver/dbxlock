@@ -3,13 +3,17 @@
 
 #include <ellLib.h>
 
-#if 1
+#if 0
 # include <epicsMutex.h>
 # define DBXSPIN_T epicsMutexId
 # define DBXSPIN_MUTEX
+#elif 1
+# include <epicsSpin.h>
+# define DBXSPIN_T epicsSpinId
+# define DBXSPIN_SPIN
 #else
 # define DBXSPIN_T int
-# define DBXSPIN_INT
+# define DBXSPIN_ATOMIC
 #endif
 
 #ifdef __cplusplus

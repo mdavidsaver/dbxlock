@@ -52,7 +52,7 @@ struct dbxLockLink {
 
 void dbxlockunref(dbxLock *ptr);
 
-#ifdef DBXSPIN_INT
+#ifdef DBXSPIN_ATOMIC
 #define alloclock(R) do{}while(0)
 #define freelock(R) do{}while(0)
 
@@ -74,6 +74,13 @@ static void sunlock(dbxLockRef* r) {
 #define freelock(R) epicsMutexDestroy((R)->spin)
 #define slock(R) epicsMutexMustLock((R)->spin)
 #define sunlock(R) epicsMutexUnlock((R)->spin)
+#endif
+
+#ifdef DBXSPIN_SPIN
+#define alloclock(R) (R)->spin = epicsSpinCreate()
+#define freelock(R) epicsSpinDestroy((R)->spin)
+#define slock(R) epicsSpinLock((R)->spin)
+#define sunlock(R) epicsSpinUnlock((R)->spin)
 #endif
 
 #endif // DBXLOCK_PRIV_H
