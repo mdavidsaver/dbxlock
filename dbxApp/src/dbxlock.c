@@ -231,7 +231,7 @@ int dbxLockerFree(dbxLocker *ptr)
 
 dbxLock* dbxLockOne(dbxLockRef *R, unsigned int flags)
 {
-    dbxLock* L;
+    dbxLock *L, *L2;
     int newcnt;
 
 retry:
@@ -243,7 +243,11 @@ retry:
 
     epicsMutexMustLock(L->lock);
 
-    if(L != R->lock) {
+    slock(&R->spin);
+    L2 = R->lock;
+    sunlock(&R->spin);
+
+    if(L != L2) {
         /* oops, collided with recompute */
         epicsMutexUnlock(L->lock);
         dbxlockunref(L);
