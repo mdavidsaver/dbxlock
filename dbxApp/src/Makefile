@@ -17,10 +17,14 @@ dbx_LIBS += Com
 TESTPROD_IOC += testlock
 testlock_SRCS += testlock.c
 testlock_LIBS += dbx Com
+TESTS += testlock
 
 TESTPROD_IOC += stresslock
 stresslock_SRCS += stresslock.c
 stresslock_LIBS += dbx Com
+TESTS += stresslock
+
+TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
 ## Enable GCC coverage stats
 #dbxlock_CFLAGS += -fprofile-arcs -ftest-coverage
