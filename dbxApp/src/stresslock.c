@@ -112,7 +112,7 @@ void lockmany(threaddata *self, int r)
             testFail("dbxLockerAlloc fails");
             return;
         }
-        if(nlock>=2 && refs[0] != refs[1] && rand_r(&self->seed)<RAND_MAX/32)
+        if(nlock>=2 && refs[0] != refs[1])
         {
             self->link = dbxLockRefJoin(locker, refs[0], refs[1]);
             epicsAtomicIncrSizeT(&numJoin);
@@ -153,7 +153,7 @@ void testTask(void *raw)
     epicsEventSignal(self->stop);
 }
 
-#define MAXREFS 150
+#define MAXREFS 30
 
 static
 void runStress(void)
